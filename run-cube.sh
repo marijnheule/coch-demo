@@ -12,8 +12,8 @@ fi
 rm $DIR/tmp$$.cnf $DIR/tmp$$.cube
 md5sum $DIR/$CNF | cut -c1-10 | awk '{print "MD5: "$1"\n"}'
 
-mkfifo $DIR/pipe$$
-./cake_lpr/cake_lpr $DIR/$CNF $DIR/pipe$$ &
-./cadical/build/cadical $DIR/$CNF $DIR/pipe$$ --lrat --no-binary --sat
+mkfifo pipe$$
+./cake_lpr/cake_lpr $DIR/$CNF pipe$$ &
+./cadical/build/cadical $DIR/$CNF pipe$$ --lrat --no-binary --sat
 wait
-rm $DIR/$CNF $DIR/pipe$$
+rm $DIR/$CNF pipe$$
