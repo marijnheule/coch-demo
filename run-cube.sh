@@ -1,13 +1,19 @@
 CNF=cube$$.cnf
+DIR=$2
 
-./build/6gon-final > tmp$$.cnf
-./build/gen-6gon-cube $1 > tmp$$.cube
-./build/apply.sh tmp$$.cnf tmp$$.cube 1 > $CNF
-rm tmp$$.cnf tmp$$.cube
-md5sum $CNF | cut -c1-10 | awk '{print "MD5: "$1"\n"}'
+if [ -z "$DIR" ]
+then
+  DIR=/tmp
+fi
 
-mkfifo pipe$$
-./cake_lpr/cake_lpr $CNF pipe$$ &
-./cadical/build/cadical $CNF pipe$$ --lrat --no-binary --sat
+./build/6gon-final > $DIR/tmp$$.cnf
+./build/gen-6gon-cube $1 > $DIR/tmp$$.cube
+./build/apply.sh $DIR/tmp$$.cnf $DIR/tmp$$.cube 1 > $CNF
+rm $DIR/tmp$$.cnf $DIR/tmp$$.cube
+md5sum $DIR/$CNF | cut -c1-10 | awk '{print "MD5: "$1"\n"}'
+
+mkfifo $DIR/pipe$$
+./cake_lpr/cake_lpr $DIR/$CNF $DIR/pipe$$ &
+./cadical/build/cadical $DIR/$CNF $DIR/pipe$$ --lrat --no-binary --sat
 wait
-rm $CNF pipe$$
+rm $DIR/$CNF $DIR/pipe$$
