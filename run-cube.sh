@@ -3,7 +3,7 @@ DIR=$2
 
 if [ -z "$DIR" ]
 then
-  DIR=/tmp
+  DIR=.
 fi
 
 ./build/6gon-final > $DIR/tmp$$.cnf
