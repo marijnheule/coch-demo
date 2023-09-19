@@ -74,8 +74,8 @@ int main (int argc, char** argv) {
 //  if (argc > 2) offset = atoi (argv[2]);
 
   int *dudud, *cube, size;
-  dudud = (int *) malloc (sizeof (int) * (bits+2*offset));
-  cube  = (int *) malloc (sizeof (int) * (bits+2*offset));
+  dudud = (int *) malloc (sizeof (int) * (bits*2));
+  cube  = (int *) malloc (sizeof (int) * (bits*2));
 
   int max = (1 << bits) - 1;
 
