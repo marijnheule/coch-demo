@@ -12,6 +12,8 @@ cd ..
 mkdir build
 cd src
 make
-cp 6gon-final ../build
-cp gen-6gon-cube ../build
+cp 6gon-final     ../build
+cp 6hole-final    ../build
+cp gen-6gon-cube  ../build
+cp gen-6hole-cube ../build
 cd ..
