@@ -15,6 +15,6 @@ md5sum $DIR/$CNF | cut -c1-10 | awk '{print "MD5: "$1"\n"}'
 
 mkfifo $DIR/pipe$$
 ./cake_lpr/cake_lpr $DIR/$CNF $DIR/pipe$$ &
-./cadical/build/cadical $DIR/$CNF $DIR/pipe$$ --lrat --no-binary --sat
+./cadical/build/cadical $DIR/$CNF $DIR/pipe$$ --lrat --no-binary --sat --reducetarget=10
 wait
 rm $DIR/$CNF $DIR/pipe$$
