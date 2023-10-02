@@ -1,4 +1,5 @@
 
+rm -r cadical
 git clone https://github.com/arminbiere/cadical
 cd cadical
 ./configure
@@ -17,3 +18,4 @@ cp 6hole-final    ../build
 cp gen-6gon-cube  ../build
 cp gen-6hole-cube ../build
 cd ..
+cp scripts/apply.sh  build
