@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define SIZE		30
+#define BITS		21
+
+//#define ODD
 //#define VALIDATE
 #define SBP
 
-#define BITS		21
-#define OFFSET		3
+#define OFFSET		0
 
 #define MASKA		21
 #define MASKB		31
@@ -43,6 +46,20 @@ unsigned int mirror (unsigned int bv, unsigned int bits) {
   return result;
 }
 
+unsigned int lex (unsigned int bv, unsigned int bits) {
+  int low  = (bits - 1) / 2;
+  int high = (bits - 0) / 2;
+
+  while (low >= 0) {
+    int l = (bv & (1 << low )) > 0;
+    int h = (bv & (1 << high)) > 0;
+    if (l > h) return 0;
+    if (l < h) return 1;
+    low--; high++;
+  }
+  return 0;
+}
+
 // for debugging
 void printMask (int bv, int bits) {
   for (int i = 0; i < bits; i++) {
@@ -63,22 +80,28 @@ void printCube (int *array, int size) {
 }
 
 int main (int argc, char** argv) {
+//  int n    = atoi (argv[1]);
+//  int bits = atoi (argv[2]);
+
   int match = 0;
   if (argc > 1)
     match = atoi (argv[1]);
   int count = 1;
-  int bits = BITS;
-//  int bits = atoi (argv[1]);
 
-  int offset = OFFSET;
+  int n    = SIZE;
+  int bits = BITS;
+
+  assert (bits < (n - 2));
+  assert ((n & 1) != (bits & 1));
+
+  int offset = (n - bits - 3) / 2;
+
+//  int offset = OFFSET;
 //  if (argc > 2) offset = atoi (argv[2]);
 
   int *dudud, *cube, size;
-  int allocSize = bits*2;
-  dudud = (int *) malloc (sizeof (int) * allocSize);
-  cube  = (int *) malloc (sizeof (int) * allocSize);
-
-  for (int i = 0; i < allocSize; i++) dudud[i] = cube[i] = 0;
+  dudud = (int *) malloc (sizeof (int) * (bits+2*offset));
+  cube  = (int *) malloc (sizeof (int) * (bits+2*offset));
 
   int max = (1 << bits) - 1;
 
@@ -87,6 +110,9 @@ int main (int argc, char** argv) {
 #endif
 
   int f = 1;
+#ifdef ODD
+  f = 2;
+#endif
   int palin = 0;
   for (int i = 0; i <= max; i++) {
     size = 0;
@@ -96,7 +122,8 @@ int main (int argc, char** argv) {
     if (i == mirror (i,bits)) palin++;
 
 #ifdef SBP
-    if (i > mirror (i, bits)) continue;
+    if (lex (i, bits)) continue;
+//    if (i > mirror (i, bits)) continue;
 #endif
     unsigned int mask = max;
 
@@ -115,10 +142,11 @@ int main (int argc, char** argv) {
     for (int b = 0; b < bits; b++) {
       if (((1 << b) & mask) == 0) continue;
       if (((1 << b) & i   ) == 0)
-        cube[size++] = -orient (b + offset + 2, b + offset + 3, b + offset + 4);
+        cube[size++] = -orient (f*b + offset + 2, f*b + offset + 3, f*b + offset + 4);
       else
-        cube[size++] =  orient (b + offset + 2, b + offset + 3, b + offset + 4); }
+        cube[size++] =  orient (f*b + offset + 2, f*b + offset + 3, f*b + offset + 4); }
 
+//      extra = 0;
       int m = (1 << extra) - 1;
       for (int k = 0; k <= m; k++) {
         size = bits;
@@ -135,12 +163,37 @@ int main (int argc, char** argv) {
   }
 
 #ifdef VALIDATE
-  int o = offset;
-  for (int i = 2; i+1 <= bits; i++)
-    printf ("%i %i %i 0\n", -orient (i+o, i+o+1, i+o+2), -orient (i+o+1, i+o+2, i+o+3), -orient (i+o+2, i+o+3, i+o+4));
+  int reflect = (n-3)/2;
+  int* midl = (int *) malloc (sizeof(int) * reflect);
+  int* midr = (int *) malloc (sizeof(int) * reflect);
+  for (int i = 0; i < reflect; i++) {
+    midl[reflect-i-1] =  orient (  2+i,  3+i,4+i);
+    midr[reflect-i-1] = -orient (n-2-i,n-1-i,n-i); }
 
-  for (int i = 2; i+2 <= bits; i++)
-    printf ("%i %i %i %i 0\n", orient (i+o, i+o+1, i+o+2), orient (i+o+1, i+o+2, i+o+3), orient (i+o+2, i+o+3, i+o+4), orient (i+o+3, i+o+4, i+o+5));
+  printf ("c symmetry-breaking predicate\n");
+
+  for (int i = 0; i < reflect; i++)
+    for (int j = 0; j < (1 << i); j++) {
+      for (int k = 0; k < i; k++)
+        if ((1<<k) & j) printf ("%i ", midl[k]);
+        else            printf ("%i ", midr[k]);
+      printf ("%i %i 0\n", midl[i], midr[i]); }
+
+  free (midl);
+  free (midr);
+
+  printf ("c original clauses\n");
+
+  int o = offset;
+//  for (int i = 2; i+1 <= bits; i++)
+  for (int i = 2; i+1 <= n; i++)
+    printf ("%i %i %i 0\n", -orient (i, i+1, i+2), -orient (i+1, i+2, i+3), -orient (i+2, i+3, i+4));
+//    printf ("%i %i %i 0\n", -orient (i+o, i+o+1, i+o+2), -orient (i+o+1, i+o+2, i+o+3), -orient (i+o+2, i+o+3, i+o+4));
+
+//  for (int i = 2; i+2 <= bits; i++)
+  for (int i = 2; i+2 <= n; i++)
+    printf ("%i %i %i %i 0\n", orient (i, i+1, i+2), orient (i+1, i+2, i+3), orient (i+2, i+3, i+4), orient (i+3, i+4, i+5));
+//    printf ("%i %i %i %i 0\n", orient (i+o, i+o+1, i+o+2), orient (i+o+1, i+o+2, i+o+3), orient (i+o+2, i+o+3, i+o+4), orient (i+o+3, i+o+4, i+o+5));
 #endif
 
 //  printf ("c palindromes: %i\n", palin);
