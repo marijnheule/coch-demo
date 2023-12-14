@@ -15,9 +15,6 @@
 #define CAP		0
 #define CUP		1
 #define CAPF		2
-//#define CAPG		3
-//#define CUPG		4
-//#define CAPS		5
 
 int n;
 
